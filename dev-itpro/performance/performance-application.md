@@ -110,6 +110,26 @@ Finally, make sure that you don't repeat these performance mistakes that we have
 - Don't postpone setting up global dimensions, because it can be a heavy operation when you have much data. Set up correct global dimensions to avoid changing them later on.
 - Don't run the **Copy company** operation during business hours.
 - Don't apply large configuration packages during business hours. See also [Prepare a Configuration Package](/dynamics365/business-central/admin-how-to-prepare-a-configuration-package).
+- maintain change log entry size, best option for newer version is to add retention policy from NAV, olderr version you will need to sehedule tsql job to delete olderr than x days data.
+- disable CRM integration if not needed, for some odd reason integration record table keep growing and will bring the application to knees, i will just truncate 
+
+steps to disable CRM integration:
+1)	Import the objects as normal, compile if necessary.
+2)	Search CRM Connection Setup page, there will be a new flag “Block Integration”
+3)	With the flag unchecked (the original status), using SSMS connects to the SQL server, check the company’s Integration Record table.
+4)	Truncate the integration record table in SQL SSMS query [Command: table truncate …….. ]
+5)	Now integration records should show ZERO record
+6)	Back to NAV, modify some Sales orders/purchase orders, check in SQL you should be able to see the number of records you modified synched to the integration table.
+7)	Till this step we verified the issue exists in the system. Now, Truncate the integration table again, make sure you see zero record with select count(*)
+8)	In CRM connection setup page, check “block integration” [the fix code should start to take effect]
+9)	Modify SO/PO, post them etc.
+10)	Check the count(*) in the integration table, you should see nothing synched to the table.
+
+
+integration record and disable CRM integration if i dont need it, if i do again add some retention policy around integration record table
+- review indexes and add/drop.
+- run index maintenance job periodically, do it more often if very high trannsactional system and indexes are fragmented faster.
+
 
 ## See Also
 
